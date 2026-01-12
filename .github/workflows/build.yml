@@ -7,24 +7,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Setup Java
-        uses: actions/setup-java@v2
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          distribution: 'temurin'
-          java-version: '11'
-      - name: Build project
+          python-version: '3.11'
+      - name: Install dependencies
         run: |
-          if [ -f "./gradlew" ]; then
-            chmod +x ./gradlew
-            ./gradlew build
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt
           else
-            echo "Gradle wrapper not found. Skipping build."
+            echo "No requirements.txt found. Skipping dependencies installation."
           fi
       - name: Run tests
-        run: |
-          if [ -f "./gradlew" ]; then
-            ./gradlew test
-          else
-            echo "Gradle wrapper not found. Skipping tests."
-          fi
+        run: python -m unittest test_calculator.py -v

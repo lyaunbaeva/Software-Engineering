@@ -77,8 +77,27 @@ curl -X POST http://localhost:5000/api/calculate \
 python test_api.py
 ```
 
+### Интеграция с Telegram (уведомления)
+
+Проект интегрирован с Telegram для отправки уведомлений о выполненных вычислениях через API.
+
+**Настройка:**
+```bash
+# 1. Создайте бота через @BotFather в Telegram
+# 2. Получите токен бота и Chat ID
+# 3. Установите переменные окружения:
+export TELEGRAM_BOT_TOKEN=your_token
+export TELEGRAM_CHAT_ID=your_chat_id
+export TELEGRAM_ENABLED=true
+# 4. Запустите API:
+python api.py
+```
+
+Подробная документация: **[TELEGRAM_NOTIFICATIONS.md](TELEGRAM_NOTIFICATIONS.md)**
+
 ### Документация
 
 - **[README.md](README.md)** — общая информация о проекте
 - **[USER_GUIDE.md](USER_GUIDE.md)** — подробное руководство пользователя с инструкциями и примерами
 - **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** — полная документация REST API
+- **[TELEGRAM_NOTIFICATIONS.md](TELEGRAM_NOTIFICATIONS.md)** — документация уведомлений в Telegram

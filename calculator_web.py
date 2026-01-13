@@ -4,6 +4,7 @@
 """
 
 import streamlit as st
+import os
 from calculator import add, subtract, multiply, divide, power
 
 # Настройка страницы
@@ -84,6 +85,12 @@ if 'operation' not in st.session_state:
     st.session_state.operation = None
 if 'waiting_for_number' not in st.session_state:
     st.session_state.waiting_for_number = False
+if 'last_expression' not in st.session_state:
+    st.session_state.last_expression = None
+if 'last_result' not in st.session_state:
+    st.session_state.last_result = None
+if 'telegram_chat_id' not in st.session_state:
+    st.session_state.telegram_chat_id = os.getenv('TELEGRAM_CHAT_ID', '')
 
 def input_number(num):
     """Обработка ввода цифры."""
@@ -153,16 +160,22 @@ def calculate_result():
         num1 = st.session_state.previous_number
         num2 = float(st.session_state.current_number)
         
+        # Определяем символ операции
         if st.session_state.operation == '+':
             result = add(num1, num2)
+            symbol = '+'
         elif st.session_state.operation == '-':
             result = subtract(num1, num2)
+            symbol = '-'
         elif st.session_state.operation == '*':
             result = multiply(num1, num2)
+            symbol = '×'
         elif st.session_state.operation == '/':
             result = divide(num1, num2)
+            symbol = '÷'
         elif st.session_state.operation == '^':
             result = power(num1, num2)
+            symbol = '^'
         else:
             return
         
@@ -177,6 +190,11 @@ def calculate_result():
         st.session_state.previous_number = None
         st.session_state.operation = None
         st.session_state.waiting_for_number = False
+        
+        # Сохраняем последнее вычисление для отправки в Telegram
+        expression = f'{num1} {symbol} {num2} = {result_str}'
+        st.session_state.last_expression = expression
+        st.session_state.last_result = result
         
     except ValueError as e:
         st.session_state.display = "Ошибка!"
@@ -199,6 +217,46 @@ st.markdown("""
 
 # Дисплей калькулятора
 st.markdown(f'<div class="display">{st.session_state.display}</div>', unsafe_allow_html=True)
+
+# Кнопка отправки в Telegram (показывается только если есть результат вычисления)
+if (st.session_state.last_expression and 
+    st.session_state.display != "0" and 
+    st.session_state.display != "Ошибка!" and
+    "=" in st.session_state.last_expression):
+    
+    # Кнопка отправки в Telegram
+    telegram_col1, telegram_col2 = st.columns([2, 1])
+    with telegram_col1:
+        st.markdown("")  # Отступ
+    with telegram_col2:
+        if st.button("📱 Отправить в Telegram", key="send_telegram", use_container_width=True, type="secondary"):
+            # Отправка в Telegram
+            try:
+                from telegram_notify import send_notification_sync
+                
+                chat_id = st.session_state.telegram_chat_id or os.getenv('TELEGRAM_CHAT_ID', '')
+                bot_token = os.getenv('TELEGRAM_BOT_TOKEN', '')
+                
+                if not bot_token:
+                    st.error("❌ TELEGRAM_BOT_TOKEN не установлен. Установите переменную окружения.")
+                elif not chat_id:
+                    st.warning("⚠️ Укажите Chat ID в настройках ниже")
+                else:
+                    success = send_notification_sync(
+                        st.session_state.last_expression,
+                        st.session_state.last_result,
+                        chat_id
+                    )
+                    if success:
+                        st.success("✅ Результат отправлен в Telegram!")
+                    else:
+                        st.error("❌ Ошибка при отправке. Проверьте настройки.")
+            except ImportError:
+                st.error("❌ Модуль telegram_notify не найден. Установите: pip install python-telegram-bot")
+            except Exception as e:
+                st.error(f"❌ Ошибка: {str(e)}")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
 
 # Обработка нажатий кнопок
 # Первая строка: C, ⌫, ^, /
@@ -300,12 +358,43 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # Информационная панель внизу
 st.markdown("---")
+
+# Настройки Telegram
+with st.expander("⚙️ Настройки Telegram"):
+    telegram_token = os.getenv('TELEGRAM_BOT_TOKEN', '')
+    if telegram_token:
+        st.success(f"✅ Токен бота настроен: {telegram_token[:20]}...")
+    else:
+        st.warning("⚠️ TELEGRAM_BOT_TOKEN не установлен")
+        st.info("Установите переменную окружения: export TELEGRAM_BOT_TOKEN=your_token")
+    
+    chat_id_input = st.text_input(
+        "Chat ID для отправки уведомлений:",
+        value=st.session_state.telegram_chat_id,
+        help="Получите Chat ID через @userinfobot или скрипт telegram_notify.py"
+    )
+    if chat_id_input != st.session_state.telegram_chat_id:
+        st.session_state.telegram_chat_id = chat_id_input
+        st.rerun()
+    
+    if st.session_state.telegram_chat_id:
+        st.success(f"✅ Chat ID установлен: {st.session_state.telegram_chat_id}")
+    
+    st.markdown("""
+    **Как получить Chat ID:**
+    1. Найдите [@userinfobot](https://t.me/userinfobot) в Telegram
+    2. Отправьте `/start`
+    3. Скопируйте ваш ID
+    4. Вставьте выше
+    """)
+
 with st.expander("ℹ️ Справка"):
     st.markdown("""
     **Как пользоваться:**
     - Нажмите на цифры для ввода числа
     - Выберите операцию (+, -, ×, /, ^)
     - Нажмите "=" для вычисления результата
+    - Нажмите "📱 Telegram" для отправки результата в Telegram
     - Нажмите "C" для очистки
     - Нажмите "⌫" для удаления последней цифры
     - Нажмите "±" для изменения знака числа

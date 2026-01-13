@@ -20,12 +20,20 @@ st.markdown("""
 <style>
     .calculator-container {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 20px 30px 30px 30px;
+        padding: 10px 30px 30px 30px;
         border-radius: 20px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         max-width: 500px;
-        margin: 0 auto;
-        margin-top: 0;
+        margin: 1rem auto 0 auto;
+    }
+
+    .calc-title {
+        text-align: center;
+        color: white;
+        margin: 0.5rem 0 1.5rem 0;
+        font-size: 2.5rem;
+        font-weight: bold;
+        width: 100%;
     }
     /* Скрываем стандартные элементы Streamlit над калькулятором */
     #MainMenu {visibility: hidden;}

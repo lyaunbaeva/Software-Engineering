@@ -37,15 +37,17 @@ python -m unittest test_calculator.py
 
 ```
 .
-├── calculator.py          # Основной модуль с функциями калькулятора
-├── calculator_web.py     # Веб-версия калькулятора (Streamlit)
-├── api.py                # REST API для калькулятора
-├── test_calculator.py     # Модульные тесты
-├── test_api.py           # Тесты для API
-├── requirements.txt       # Зависимости проекта
-├── README.md             # Документация проекта
-├── USER_GUIDE.md         # Руководство пользователя
-└── API_DOCUMENTATION.md  # Документация API
+├── calculator.py              # Основной модуль с функциями калькулятора
+├── calculator_web.py         # Веб-версия калькулятора (Streamlit)
+├── api.py                    # REST API для калькулятора
+├── telegram_notify.py        # Модуль отправки уведомлений в Telegram
+├── test_calculator.py         # Модульные тесты
+├── test_api.py               # Тесты для API
+├── requirements.txt           # Зависимости проекта
+├── README.md                 # Документация проекта
+├── USER_GUIDE.md             # Руководство пользователя
+├── API_DOCUMENTATION.md      # Документация API
+└── TELEGRAM_NOTIFICATIONS.md # Документация уведомлений в Telegram
 ```
 
 ### Запуск API
